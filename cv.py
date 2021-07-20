@@ -124,7 +124,7 @@ for col in cols:
     p1 = plot_p(data, source, col, dates[-28], dates[-1])
     p2 = plot_p(data, source, col, dates[i-27], dates[i])
     if p2x:
-        p2.x_range = p2x
+        p2.x_range = p2x 
     else:
         p2x=p2.x_range
     row1.append(p1)
@@ -150,4 +150,4 @@ select.toolbar.active_multi = range_tool
 
 output_file("uk.html")
 save(column(row(row1), row(row2), select))
-show(column(row(row1), row(row2), select))
+#show(column(row(row1), row(row2), select))
