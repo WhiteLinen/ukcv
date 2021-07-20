@@ -148,7 +148,7 @@ select.add_tools(range_tool)
 select.toolbar.active_multi = range_tool
 
 
-output_file("uk.html")
+output_file("index.html")
 
 
 save(column(PreText(text='Recent Month'), row(row1), PreText(text='Historical'), row(row2), select))
