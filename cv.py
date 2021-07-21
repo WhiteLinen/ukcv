@@ -68,6 +68,9 @@ from bokeh.models import LinearAxis, Range1d, PreText
 from bokeh.transform import dodge
 
 
+cols=[ 'newCases', 'deaths', 'admissions', 'inHospital']
+for c in cols:
+    data[c+'_rollingmean'] = data[c].rolling(7).mean()
 rm=data.rolling(7).mean()
 data['ymd'] = [x.strftime("%Y-%m-%d") for x in data.index]
 
@@ -104,7 +107,7 @@ def plot_p(data, source, col, start_date, end_date):
     #p.add_layout(LinearAxis(y_range_name="y2", axis_label="Admission/Death"), 'right')
     #p.vbar(x=data.index.values, top=col, width=0.2, source=source,  color=colors[col])
     p.line('date', col , source=source, color=colors[col])#y_range_name="y2")
-    
+    p.line('date', col+'_rollingmean', source=source, color=colors[col], line_dash='dotted')
     #p.legend.click_policy="hide"
     #p.legend.location = 'top_left'
     #p.add_layout(p.legend[0], 'right')
@@ -116,7 +119,6 @@ i = rm.newCases.gt(rm.newCases[-1]).argmax()
 #i=data.newCases.gt(data.newCases[-1]).argmax()
 source = ColumnDataSource(data=data)
 
-cols=[ 'newCases', 'deaths', 'admissions', 'inHospital']
 row1=[]
 row2=[]
 p2x=None
@@ -151,5 +153,5 @@ select.toolbar.active_multi = range_tool
 output_file("index.html")
 
 
-save(column(PreText(text='Recent Month'), row(row1), PreText(text='Historical'), row(row2), select))
-#show(column(row(row1), row(row2), select))
+#save(column(PreText(text='Recent Month'), row(row1), PreText(text='Historical'), row(row2), select))
+show(column(PreText(text='Recent Month'), row(row1), PreText(text='Historical'), row(row2), select))
