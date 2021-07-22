@@ -68,7 +68,7 @@ from bokeh.models import LinearAxis, Range1d, PreText
 from bokeh.transform import dodge
 
 
-cols=[ 'newCases', 'deaths', 'admissions', 'inHospital']
+cols=[ 'newCases', 'inHospital', 'admissions', 'deaths']
 for c in cols:
     data[c+'_rollingmean'] = data[c].rolling(7).mean()
 rm=data.rolling(7).mean()
