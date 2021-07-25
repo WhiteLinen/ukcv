@@ -11,11 +11,14 @@ import io
 import requests
 from datetime import datetime
 
-
+saved_data_fn='data.h5'
     
 def download_data(data_fn):
     try:
-        data_url='https://api.coronavirus.data.gov.uk/v2/data?areaType=overview&metric=hospitalCases&metric=newAdmissions&metric=newCasesByPublishDate&metric=newDeaths28DaysByPublishDate&format=csv'
+        data_url='https://api.coronavirus.data.gov.uk/v2/data?areaType=overview&'+\
+        'metric=covidOccupiedMVBeds&metric=hospitalCases&'+\
+        'metric=newAdmissions&metric=newCasesByPublishDate&'+\
+        'metric=newDeaths28DaysByPublishDate&format=csv'
     
         s=requests.get(data_url).content
         data=pd.read_csv(io.StringIO(s.decode('utf-8')))
@@ -23,13 +26,16 @@ def download_data(data_fn):
         data.index = pd.to_datetime(data.index)
         data = data.sort_index()
         renames={'hospitalCases': 'inHospital',
-                 'newAdmissions': 'admissions',
+                 'covidOccupiedMVBeds': 'mvBeds',
+                 'newAdmissions': 'admissions',                 
                  'newCasesByPublishDate': 'newCases',
                  'newDeaths28DaysByPublishDate': 'deaths'}
 
         data=data.rename(columns=renames)
-        
+        data.to_csv('data.csv')
         data.to_hdf(data_fn, 'data')
+        data.to_hdf(saved_data_fn, 'data')
+        
         print('Fresh data downloaded and save to ', data_fn)
         return data
     except Exception as e:
@@ -48,8 +54,8 @@ except Exception as e:
     print('Try download fresh data for today')    
     data = download_data(datafile)
     if data is None:
-        print('use old data.h5')
-        data = pd.read_hdf('data.h5')
+        print('use last saved', saved_data_fn)
+        data = pd.read_hdf(saved_data_fn)
         
 
     
@@ -68,7 +74,7 @@ from bokeh.models import LinearAxis, Range1d, PreText
 from bokeh.transform import dodge
 
 
-cols=[ 'newCases', 'inHospital', 'admissions', 'deaths']
+cols=[ 'newCases', 'inHospital', 'admissions', 'mvBeds', 'deaths']
 for c in cols:
     data[c+'_rollingmean'] = data[c].rolling(7).mean()
 rm=data.rolling(7).mean()
@@ -76,13 +82,14 @@ data['ymd'] = [x.strftime("%Y-%m-%d") for x in data.index]
 
 colors = {'inHospital': 'brown',
  'admissions': 'orange',
- 'newCases': 'blue',
+ 'newCases': 'green',
+ 'mvBeds': 'blue',
  'deaths': 'red'}
 
 
 def plot_p(data, source, col, start_date, end_date):
     
-    p = figure(plot_height=200, plot_width=300, tools="xpan", 
+    p = figure(plot_height=200, plot_width=250, tools="xpan", 
                toolbar_location=None,
                title= col, 
                x_axis_type="datetime", x_axis_location="above",
@@ -96,8 +103,10 @@ def plot_p(data, source, col, start_date, end_date):
     
     hover = bokeh.models.HoverTool(tooltips=[('Date', '@ymd'),
                                              ('Death','@deaths'),
+                                              ('onVentilator', '@mvBeds'),
                                              ('Admissions', '@admissions'),
                                              ('InHospital', '@inHospital'),
+                                            
                                              ('NewCase','@newCases')])
     p.add_tools(hover)
     
@@ -133,7 +142,7 @@ for col in cols:
     row2.append(p2)
     
 select = figure(title="Drag the middle and edges of the selection box to change the range above",
-                plot_height=130, plot_width=1200, y_range=row2[0].y_range,
+                plot_height=130, plot_width=1250, y_range=row2[0].y_range,
                 x_axis_type="datetime", y_axis_type=None,
                 tools="", toolbar_location=None, background_fill_color="#efefef")
 
@@ -143,7 +152,7 @@ range_tool = RangeTool(x_range=p2x)
 range_tool.overlay.fill_color = "navy"
 range_tool.overlay.fill_alpha = 0.2
 
-for c in [ 'deaths', 'admissions', 'newCases', 'inHospital']:
+for c in cols:
     select.line('date', c, source=source, color=colors[c])
 select.ygrid.grid_line_color = None
 select.add_tools(range_tool)
