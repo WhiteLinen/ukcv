@@ -11,7 +11,7 @@ import io
 import requests
 from datetime import datetime
 
-saved_data_fn='data.h5'
+saved_data_fn='data.csv'
     
 def download_data(data_fn):
     try:
@@ -32,9 +32,9 @@ def download_data(data_fn):
                  'newDeaths28DaysByPublishDate': 'deaths'}
 
         data=data.rename(columns=renames)
-        data.to_csv('data.csv')
+       
         data.to_hdf(data_fn, 'data')
-        data.to_hdf(saved_data_fn, 'data')
+        data.to_csv(saved_data_fn, 'data')
         
         print('Fresh data downloaded and save to ', data_fn)
         return data
@@ -46,16 +46,19 @@ def download_data(data_fn):
 datafile=datetime.today().strftime('data_%Y%m%d.h5')
 
 try:
-    
-    data = pd.read_hdf(datafile)
+    data=None
+    #data = pd.read_hdf(datafile)
     print('Reading today datafile', datafile) 
 except Exception as e:
     #print("can not read ", datafile, e)
     print('Try download fresh data for today')    
     data = download_data(datafile)
-    if data is None:
-        print('use last saved', saved_data_fn)
-        data = pd.read_hdf(saved_data_fn)
+if data is None:
+    print('use last saved', saved_data_fn)
+    data = pd.read_csv(saved_data_fn, index_col=0)
+    data.index = pd.to_datetime(data.index)
+    
+    
         
 
     
@@ -94,7 +97,7 @@ def plot_p(data, source, col, start_date, end_date):
                title= col, 
                x_axis_type="datetime", x_axis_location="above",
                background_fill_color="#efefef", 
-               y_range=[0, data[col].max()],
+               y_range=[0, ((data[col].max()+1000)//1000)*1000],
                x_range=(start_date, end_date))
     
     # Set up hover tool
