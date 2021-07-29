@@ -132,10 +132,15 @@ source = ColumnDataSource(data=data)
 
 row1=[]
 row2=[]
+p1x=None
 p2x=None
 for col in cols:
     p1 = plot_p(data, source, col, dates[-28], dates[-1])
     p2 = plot_p(data, source, col, dates[i-27], dates[i])
+    if p1x:
+        p1.x_range = p1x
+    else:
+        p1x = p1.x_range
     if p2x:
         p2.x_range = p2x 
     else:
