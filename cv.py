@@ -126,7 +126,7 @@ def plot_p(data, source, col, start_date, end_date):
 
 dates = data.index 
 
-i = rm.newCases.gt(rm.newCases[-1]).argmax()
+i = rm.newCases.gt(rm.newCases[-1]).values.argmax()
 #i=data.newCases.gt(data.newCases[-1]).argmax()
 source = ColumnDataSource(data=data)
 
