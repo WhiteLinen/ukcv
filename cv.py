@@ -96,7 +96,7 @@ def plot_p(data, source, col, start_date, end_date):
                title= col, 
                x_axis_type="datetime", x_axis_location="above",
                background_fill_color="#efefef", 
-               y_range=[0, ((data[col].max()+1000)//1000)*1000],
+               y_range=[((data[col][start_date: end_date].min()-100)//100)*100, ((data[col][start_date: end_date].max()+100)//100)*100],
                x_range=(start_date, end_date))
     
     # Set up hover tool
@@ -126,7 +126,7 @@ def plot_p(data, source, col, start_date, end_date):
 
 dates = data.index 
 
-i = rm.newCases.gt(rm.newCases[-1]).values.argmax()
+#i = rm.newCases.gt(rm.newCases[-1]).values.argmax()
 #i=data.newCases.gt(data.newCases[-1]).argmax()
 source = ColumnDataSource(data=data)
 
@@ -136,7 +136,8 @@ p1x=None
 p2x=None
 for col in cols:
     p1 = plot_p(data, source, col, dates[-28], dates[-1])
-    p2 = plot_p(data, source, col, dates[i-27], dates[i])
+    #p2 = plot_p(data, source, col, dates[i-27], dates[i])
+    p2 = plot_p(data, source, col, dates[-84], dates[-1])
     if p1x:
         p1.x_range = p1x
     else:
@@ -149,7 +150,7 @@ for col in cols:
     row2.append(p2)
     
 select = figure(title="Drag the middle and edges of the selection box to change the range above",
-                plot_height=130, plot_width=1250, y_range=row2[0].y_range,
+                plot_height=130, plot_width=1250, y_range=(0, ((data[cols].max().max()+100)//100)*100),
                 x_axis_type="datetime", y_axis_type=None,
                 tools="", toolbar_location=None, background_fill_color="#efefef")
 
