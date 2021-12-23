@@ -126,8 +126,12 @@ def plot_p(data, source, col, start_date, end_date):
 
 dates = data.index 
 
-#i = rm.newCases.gt(rm.newCases[-1]).values.argmax()
+i=rm.admissions[:-30].idxmax() 
+#i = rm.newCases.gt(rm.newCases[-1]).idxmax()
+
 #i=data.newCases.gt(data.newCases[-1]).argmax()
+
+#print(i)
 source = ColumnDataSource(data=data)
 
 row1=[]
@@ -136,7 +140,7 @@ p1x=None
 p2x=None
 for col in cols:
     p1 = plot_p(data, source, col, dates[-28], dates[-1])
-    #p2 = plot_p(data, source, col, dates[i-27], dates[i])
+    #p2 = plot_p(data, source, col, i-pd.Timedelta(14, unit="d"), i+ pd.Timedelta(13, unit="d"))
     p2 = plot_p(data, source, col, dates[-84], dates[-1])
     if p1x:
         p1.x_range = p1x
