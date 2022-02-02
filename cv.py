@@ -11,6 +11,16 @@ import io
 import requests
 from datetime import datetime
 
+import bokeh
+from bokeh.io import show
+from bokeh.layouts import column, row
+from bokeh.models import ColumnDataSource, RangeTool, HoverTool
+from bokeh.plotting import figure
+from bokeh.io import output_file, show
+from bokeh.plotting import figure, output_file, save
+from bokeh.models import LinearAxis, Range1d, PreText
+from bokeh.transform import dodge
+
 saved_data_fn='data.csv'
     
 def download_data(data_fn):
@@ -57,41 +67,31 @@ if data is None:
     data = pd.read_csv(saved_data_fn, index_col=0)
     data.index = pd.to_datetime(data.index)
     
-    
-        
 
-    
-    
+data['newCases(k)'] = data['newCases']/1000
 
-import numpy as np
-
-import bokeh
-from bokeh.io import show
-from bokeh.layouts import column, row
-from bokeh.models import ColumnDataSource, RangeTool, HoverTool
-from bokeh.plotting import figure
-from bokeh.io import output_file, show
-from bokeh.plotting import figure, output_file, save
-from bokeh.models import LinearAxis, Range1d, PreText
-from bokeh.transform import dodge
+data['inHospital(10s)'] = data['inHospital']/10
 
 
-cols=[ 'newCases', 'inHospital', 'admissions', 'mvBeds', 'deaths']
+
+cols=[ 'newCases(k)', 'inHospital(10s)', 'admissions', 'mvBeds', 'deaths']
+cols=[ 'admissions', 'mvBeds', 'deaths']
+
 for c in cols:
     data[c+'_rollingmean'] = data[c].rolling(7).mean()
 rm=data.rolling(7).mean()
 data['ymd'] = [x.strftime("%Y-%m-%d") for x in data.index]
 
-colors = {'inHospital': 'brown',
+colors = {'inHospital(10s)': 'brown',
  'admissions': 'orange',
- 'newCases': 'green',
+ 'newCases(k)': 'green',
  'mvBeds': 'blue',
  'deaths': 'red'}
 
 
 def plot_p(data, source, col, start_date, end_date):
     
-    p = figure(plot_height=200, plot_width=250, tools="xpan", 
+    p = figure(plot_height=200, plot_width=400, tools="xpan", 
                toolbar_location=None,
                title= col, 
                x_axis_type="datetime", x_axis_location="above",
@@ -154,7 +154,7 @@ for col in cols:
     row2.append(p2)
     
 select = figure(title="Drag the middle and edges of the selection box to change the range above",
-                plot_height=130, plot_width=1250, y_range=(0, ((data[cols].max().max()+100)//100)*100),
+                plot_height=130, plot_width=1200, y_range=(0, ((data[cols].max().max()+100)//100)*100),
                 x_axis_type="datetime", y_axis_type=None,
                 tools="", toolbar_location=None, background_fill_color="#efefef")
 
